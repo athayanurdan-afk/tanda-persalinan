@@ -1,1 +1,849 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Kesehatan Ibu Hamil</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Font dan Palet Warna */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+        
+        :root {
+            --primary-color: #6a1b9a; /* Ungu Cerah */
+            --secondary-color: #43a047; /* Hijau Segar */
+            --background-start: #ede7f6; /* Gradien ungu muda */
+            --background-end: #e0f7fa; /* Gradien biru muda */
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --button-bg: #8e24aa; /* Ungu gelap */
+            --button-hover: #ab47bc; /* Ungu sedang */
+            --correct-color: #4caf50;
+            --wrong-color: #e53935;
+            --dark-bg: #121212;
+            --dark-text: #e0e0e0;
+            --dark-card-bg: #2d2d2d;
+            --dark-progress-bg: #444444;
+        }
 
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--background-start), var(--background-end));
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            transition: all 0.5s ease-in-out;
+        }
+        
+        body.dark-mode {
+            background: #121212;
+            color: var(--dark-text);
+        }
+        body.dark-mode .page {
+            background-color: var(--dark-card-bg);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .page {
+            display: none;
+            animation: fadeInScale 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-radius: 20px;
+            padding: 40px;
+            background-color: var(--card-bg);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.5s, transform 0.3s;
+        }
+        
+        .page.active {
+            display: block;
+        }
+
+        h1, h2, h3 {
+            color: var(--primary-color);
+        }
+
+        body.dark-mode h1, body.dark-mode h2, body.dark-mode h3 {
+            color: var(--secondary-color);
+        }
+
+        p {
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        /* Animasi Kunci */
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .button {
+            display: inline-block;
+            padding: 14px 28px;
+            margin: 15px;
+            border: none;
+            border-radius: 50px;
+            background-color: var(--button-bg);
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s, background-color 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .button:hover {
+            transform: translateY(-5px) scale(1.05);
+            background-color: var(--button-hover);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        #landing-page .button {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Styling Khusus */
+        #main-menu .button {
+            display: block;
+            width: 80%;
+            margin: 20px auto;
+        }
+        
+        #education-page ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        #education-page li {
+            background-color: var(--card-bg);
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, background-color 0.3s, box-shadow 0.3s;
+            text-align: left;
+        }
+
+        body.dark-mode #education-page li {
+            background-color: var(--dark-card-bg);
+        }
+
+        #education-page li:hover {
+            transform: translateX(10px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .detail-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        @media (min-width: 600px) {
+            .detail-content {
+                flex-direction: row;
+                text-align: left;
+            }
+        }
+        
+        #detail-image, #detail-video {
+            max-width: 250px;
+            height: auto;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            animation: fadeIn 1s ease-out;
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        #detail-image:hover, #detail-video:hover {
+            transform: scale(1.05);
+        }
+        
+        #video-container {
+            margin-top: 20px;
+            width: 100%;
+            max-width: 700px; /* Lebar lebih besar untuk video */
+            aspect-ratio: 16 / 9; /* Rasio aspek video 16:9 */
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: none; /* Sembunyikan secara default */
+        }
+        
+        #video-container.active {
+            display: block;
+        }
+        
+        #video-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        #progress-container {
+            width: 100%;
+            height: 15px;
+            background-color: #e0e0e0;
+            border-radius: 50px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        body.dark-mode #progress-container {
+            background-color: var(--dark-progress-bg);
+        }
+
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: var(--secondary-color);
+            border-radius: 50px;
+            transition: width 0.4s ease-in-out;
+        }
+
+        .option {
+            background-color: var(--card-bg);
+            border: 2px solid var(--secondary-color);
+            padding: 15px;
+            margin-bottom: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        body.dark-mode .option {
+            background-color: var(--dark-card-bg);
+        }
+
+        .option:hover {
+            background-color: var(--secondary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .option.correct {
+            background-color: var(--correct-color);
+            color: white;
+            border-color: var(--correct-color);
+        }
+
+        .option.wrong {
+            background-color: var(--wrong-color);
+            color: white;
+            border-color: var(--wrong-color);
+        }
+
+        #quiz-result-page {
+            font-size: 1.2rem;
+        }
+        #quiz-result-page h2 {
+            color: var(--primary-color);
+        }
+
+        #leaderboard-list {
+            list-style: none;
+            padding: 0;
+            text-align: left;
+        }
+
+        #leaderboard-list li {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        body.dark-mode #leaderboard-list li {
+            border-bottom: 1px solid #444;
+        }
+        
+        #dark-mode-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: var(--text-color);
+            border-radius: 50px;
+            padding: 8px 16px;
+        }
+        
+        body.dark-mode #dark-mode-toggle {
+            background-color: rgba(0, 0, 0, 0.2);
+            color: var(--dark-text);
+        }
+
+        /* Kalkulator Usia Kehamilan */
+        .calculator-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+        }
+        .calculator-content label {
+            font-weight: 600;
+        }
+        .calculator-content input[type="date"] {
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px solid #ccc;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .calculator-content input[type="date"]:focus {
+            border-color: var(--primary-color);
+        }
+        #gestational-age-result {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        /* Kotak Pesan Kustom */
+        .message-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            text-align: center;
+            animation: fadeIn 0.3s ease-out;
+            max-width: 90%;
+        }
+        body.dark-mode .message-box {
+            background-color: var(--dark-card-bg);
+        }
+
+        .message-box p {
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Halaman Utama (Landing Page) -->
+        <div id="landing-page" class="page active">
+            <h2>Aplikasi Kesehatan Ibu Hamil</h2>
+            <p>Kenali dan pantau kesehatan ibu dan janin.</p>
+            <button id="start-btn" class="button">Mulai</button>
+        </div>
+
+        <!-- Menu Utama -->
+        <div id="main-menu" class="page">
+            <h2>Menu Utama</h2>
+            <button id="edu-menu-btn" class="button">Edukasi</button>
+            <button id="quiz-menu-btn" class="button">Quiz</button>
+            <button id="hpl-menu-btn" class="button">Kalkulator HPL</button>
+            <button id="age-calc-btn" class="button">Kalkulator Usia Kehamilan</button>
+            <button id="leaderboard-menu-btn" class="button">Leaderboard</button>
+        </div>
+
+        <!-- Halaman Edukasi -->
+        <div id="education-page" class="page">
+            <h2>Edukasi Tanda Bahaya</h2>
+            <p>Tanda bahaya kehamilan adalah gejala yang menunjukkan adanya komplikasi pada ibu hamil yang dapat membahayakan ibu maupun janin, sehingga perlu penanganan segera oleh tenaga kesehatan.</p>
+            <p>Klik pada salah satu tanda bahaya untuk melihat penjelasan lebih detail.</p>
+            <ul id="danger-list">
+                <li data-danger="perdarahan">Perdarahan Vaginal</li>
+                <li data-danger="sakit-kepala">Sakit Kepala Hebat dan Pandangan Kabur</li>
+                <li data-danger="bengkak">Bengkak Wajah/Tangan</li>
+                <li data-danger="janin">Gerakan Janin Berkurang</li>
+                <li data-danger="demam">Demam Tinggi</li>
+                <li data-danger="nyeri-hebat">Nyeri Hebat pada Perut Bagian Bawah atau Punggung</li>
+                <li data-danger="air-ketuban">Pecahnya Kantung Ketuban Sebelum Waktunya</li>
+                <li data-danger="video">Video Edukasi</li>
+            </ul>
+            <button id="back-to-menu-from-edu" class="button">Kembali</button>
+        </div>
+
+        <!-- Halaman Detail Edukasi -->
+        <div id="detail-page" class="page">
+            <h2 id="detail-title"></h2>
+            <div class="detail-content-video">
+                <div id="video-container">
+                    <iframe id="detail-video-embed" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+                <div>
+                    <p id="detail-description"></p>
+                    <p id="detail-action"></p>
+                </div>
+            </div>
+            <button id="back-to-edu" class="button">Kembali ke Edukasi</button>
+        </div>
+
+        <!-- Halaman Quiz -->
+        <div id="quiz-page" class="page">
+            <h2 id="quiz-title">Quiz Interaktif</h2>
+            <div id="progress-container">
+                <div id="progress-bar"></div>
+            </div>
+            <div id="question-container">
+                <p id="question-text"></p>
+                <div id="options-container"></div>
+            </div>
+            <div id="feedback-container"></div>
+            <button id="next-question-btn" class="button" style="display: none;">Lanjut</button>
+            <button id="back-to-menu-from-quiz" class="button" style="display: none;">Kembali ke Menu</button>
+        </div>
+        
+        <!-- Halaman Hasil Quiz -->
+        <div id="quiz-result-page" class="page">
+            <h2>Hasil Quiz Anda</h2>
+            <p>Skor Anda: <span id="final-score"></span>/10</p>
+            <p id="score-category"></p>
+            <div id="badge-container" style="font-size: 3em;"></div>
+            <button id="retake-quiz-btn" class="button">Ulangi Quiz</button>
+            <button id="back-to-menu-from-result" class="button">Kembali ke Menu</button>
+        </div>
+
+        <!-- Halaman Kalkulator HPL -->
+        <div id="hpl-page" class="page">
+            <h2>Kalkulator HPL</h2>
+            <p>Masukkan tanggal Hari Pertama Haid Terakhir (HPHT) Anda.</p>
+            <label for="hpht-date">Tanggal HPHT:</label>
+            <input type="date" id="hpht-date">
+            <button id="calculate-hpl-btn" class="button">Hitung HPL</button>
+            <p id="hpl-result" style="font-weight: bold; margin-top: 20px;"></p>
+            <button id="back-to-menu-from-hpl" class="button">Kembali</button>
+        </div>
+        
+        <!-- Halaman Kalkulator Usia Kehamilan -->
+        <div id="gestational-age-page" class="page">
+            <h2>Kalkulator Usia Kehamilan</h2>
+            <p>Hitung perkiraan usia kehamilan Anda berdasarkan HPHT.</p>
+            <div class="calculator-content">
+                <label for="hpht-date-age">Tanggal HPHT:</label>
+                <input type="date" id="hpht-date-age">
+                <button id="calculate-age-btn" class="button">Hitung Usia Kehamilan</button>
+            </div>
+            <p id="gestational-age-result" class="text-lg font-semibold mt-4"></p>
+            <button id="back-to-menu-from-age-calc" class="button">Kembali</button>
+        </div>
+
+        <!-- Halaman Leaderboard -->
+        <div id="leaderboard-page" class="page">
+            <h2>Leaderboard Skor Terbaik</h2>
+            <p>Berikut adalah 10 skor terbaik:</p>
+            <input type="text" id="leaderboard-name" placeholder="Masukkan nama...">
+            <button id="save-score-btn" class="button" style="display: none;">Simpan Skor</button>
+            <ul id="leaderboard-list"></ul>
+            <button id="back-to-menu-from-leaderboard" class="button">Kembali</button>
+        </div>
+
+        <!-- Tombol Dark Mode -->
+        <button id="dark-mode-toggle" class="button">Mode Gelap</button>
+
+        <!-- Custom Message Box (Pengganti alert) -->
+        <div id="message-box" class="message-box" style="display: none;">
+            <p id="message-box-text"></p>
+            <button id="message-box-close" class="button">OK</button>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Data untuk edukasi
+            const dangerSigns = {
+                'perdarahan': {
+                    title: 'Perdarahan Vaginal',
+                    description: 'Perdarahan saat hamil, meskipun sedikit, bisa menjadi tanda bahaya. Terutama jika disertai nyeri perut hebat atau kram, yang bisa mengindikasikan keguguran atau masalah plasenta.',
+                    action: 'Segera periksa ke dokter atau fasilitas kesehatan terdekat. Jangan tunda!'
+                },
+                'sakit-kepala': {
+                    title: 'Sakit Kepala Hebat dan Pandangan Kabur',
+                    description: 'Sakit kepala yang sangat parah dan tidak kunjung hilang, terutama setelah trimester pertama, bisa menjadi gejala preeklamsia, kondisi serius yang berbahaya bagi ibu dan janin. Gangguan penglihatan seperti pandangan kabur atau kilatan cahaya juga merupakan tanda bahaya preeklamsia.',
+                    action: 'Hubungi dokter Anda segera. Jangan minum obat tanpa resep dokter.'
+                },
+                'bengkak': {
+                    title: 'Bengkak Wajah/Tangan',
+                    description: 'Pembengkakan yang tiba-tiba dan berlebihan pada wajah, tangan, atau kaki (bukan hanya di bagian bawah) bisa menjadi tanda preeklamsia. Jika disertai tekanan darah tinggi, ini sangat berisiko.',
+                    action: 'Periksakan diri Anda ke dokter untuk pengecekan tekanan darah dan protein urin.'
+                },
+                'janin': {
+                    title: 'Gerakan Janin Berkurang',
+                    description: 'Setelah usia kehamilan 28 minggu, janin biasanya aktif bergerak. Jika ada penurunan signifikan dalam jumlah gerakan, ini bisa menjadi tanda janin mengalami distress.',
+                    action: 'Coba minum air dingin atau makan sesuatu, lalu berbaring dan hitung gerakannya. Jika masih kurang dari 10 gerakan dalam 2 jam, hubungi dokter.'
+                },
+                'demam': {
+                    title: 'Demam Tinggi',
+                    description: 'Demam tinggi (di atas 38°C) yang tidak turun bisa menjadi tanda infeksi. Infeksi saat hamil dapat memengaruhi kesehatan ibu dan janin secara serius.',
+                    action: 'Segera hubungi dokter Anda untuk mengetahui penyebabnya dan mendapatkan penanganan yang tepat.',
+                },
+                'nyeri-hebat': {
+                    title: 'Nyeri Hebat pada Perut atau Punggung',
+                    description: 'Nyeri hebat dan berkelanjutan di perut bagian bawah atau punggung bisa menjadi gejala masalah serius seperti infeksi saluran kemih atau keguguran. Nyeri yang tajam dan tidak mereda harus diwaspadai.',
+                    action: 'Segera periksakan diri Anda ke dokter untuk diagnosis dan penanganan yang tepat.'
+                },
+                'air-ketuban': {
+                    title: 'Pecahnya Kantung Ketuban Sebelum Waktunya',
+                    description: 'Pecahnya kantung ketuban atau keluarnya cairan dari vagina sebelum waktunya bisa meningkatkan risiko infeksi pada ibu dan bayi. Hal ini memerlukan perhatian medis segera.',
+                    action: 'Jika Anda merasakan semburan cairan atau rembesan dari vagina, segera hubungi atau datangi rumah sakit.'
+                },
+                'video': {
+                    title: 'Edukasi Tanda Bahaya Kehamilan',
+                    description: 'Tonton video berikut untuk mengetahui tanda-tanda bahaya kehamilan yang penting untuk Anda ketahui.',
+                    action: '',
+                    video: 'https://www.youtube.com/embed/qT7kHPt1ra8'
+                }
+            };
+            
+            // Data untuk kuis (10 soal)
+            const quizQuestions = [
+                {
+                    question: "Apa yang harus dilakukan jika mengalami perdarahan saat hamil?",
+                    options: ["Tetap santai di rumah", "Langsung ke rumah sakit", "Minum obat pereda nyeri", "Tunggu hingga perdarahan berhenti"],
+                    answer: "Langsung ke rumah sakit",
+                    explanation: "Perdarahan saat hamil adalah kondisi darurat yang memerlukan penanganan medis segera."
+                },
+                {
+                    question: "Mengapa sakit kepala hebat bisa menjadi tanda bahaya?",
+                    options: ["Karena ibu kurang tidur", "Bisa jadi tanda preeklamsia", "Itu adalah hal normal saat hamil", "Tidak ada hubungannya dengan kehamilan"],
+                    answer: "Bisa jadi tanda preeklamsia",
+                    explanation: "Sakit kepala hebat yang tidak hilang bisa menjadi salah satu gejala preeklamsia, kondisi serius yang perlu diwaspadai."
+                },
+                {
+                    question: "Jika wajah dan tangan bengkak secara tiba-tiba, Anda harus...",
+                    options: ["Mengompresnya dengan air dingin", "Menghubungi dokter untuk periksa tekanan darah", "Menganggapnya hal biasa", "Mengurangi minum air"],
+                    answer: "Menghubungi dokter untuk periksa tekanan darah",
+                    explanation: "Pembengkakan mendadak, terutama di wajah dan tangan, bisa jadi tanda preeklamsia yang berhubungan dengan tekanan darah tinggi."
+                },
+                {
+                    question: "Gerakan janin yang berkurang setelah 28 minggu kehamilan bisa menandakan...",
+                    options: ["Janin sedang tidur nyenyak", "Kondisi janin yang tertekan", "Janin sudah siap lahir", "Ibu terlalu lelah"],
+                    answer: "Kondisi janin yang tertekan",
+                    explanation: "Penurunan gerakan janin bisa menjadi tanda bahwa janin mengalami kondisi yang tidak baik atau distress."
+                },
+                {
+                    question: "Apa yang harus dilakukan jika demam tinggi (lebih dari 38°C)?",
+                    options: ["Menunggu demam turun sendiri", "Menggunakan pakaian tebal", "Segera hubungi dokter", "Makan makanan pedas"],
+                    answer: "Segera hubungi dokter",
+                    explanation: "Demam tinggi bisa menandakan infeksi yang berbahaya bagi ibu dan janin, sehingga harus segera ditangani oleh dokter."
+                },
+                {
+                    question: "Salah satu tanda bahaya kehamilan adalah nyeri perut hebat, yang bisa jadi pertanda...",
+                    options: ["Nyeri otot biasa", "Kondisi keguguran", "Gangguan pencernaan", "Kontraksi palsu"],
+                    answer: "Kondisi keguguran",
+                    explanation: "Nyeri perut hebat, terutama jika disertai perdarahan, bisa menjadi pertanda keguguran atau kehamilan ektopik."
+                },
+                {
+                    question: "Berapa gerakan janin minimal yang harus dirasakan dalam 2 jam setelah usia 28 minggu?",
+                    options: ["5 gerakan", "10 gerakan", "15 gerakan", "20 gerakan"],
+                    answer: "10 gerakan",
+                    explanation: "Jika Anda merasakan kurang dari 10 gerakan janin dalam 2 jam, segera hubungi dokter Anda."
+                },
+                {
+                    question: "Preeklamsia adalah kondisi serius yang ditandai oleh...",
+                    options: ["Tekanan darah rendah", "Sakit punggung", "Tekanan darah tinggi dan protein urin", "Gula darah tinggi"],
+                    answer: "Tekanan darah tinggi dan protein urin",
+                    explanation: "Preeklamsia adalah komplikasi kehamilan yang ditandai oleh tekanan darah tinggi dan adanya protein dalam urin."
+                },
+                {
+                    question: "Jika mata berkunang-kunang dan pandangan kabur secara mendadak, ini bisa jadi tanda...",
+                    options: ["Kelelahan mata", "Masalah penglihatan", "Preeklamsia atau tekanan darah tinggi", "Dehidrasi"],
+                    answer: "Preeklamsia atau tekanan darah tinggi",
+                    explanation: "Gangguan penglihatan seperti pandangan kabur dan kunang-kunang adalah gejala preeklamsia yang memerlukan perhatian medis."
+                },
+                {
+                    question: "Kaki bengkak pada akhir kehamilan adalah hal biasa. Namun, pembengkakan yang perlu diwaspadai adalah yang terjadi pada...",
+                    options: ["Pergelangan kaki saja", "Satu kaki saja", "Wajah, tangan, dan kaki secara mendadak", "Lutut"],
+                    answer: "Wajah, tangan, dan kaki secara mendadak",
+                    explanation: "Pembengkakan yang tiba-tiba dan merata di wajah, tangan, dan kaki adalah tanda bahaya preeklamsia."
+                }
+            ];
+
+            // Variabel state
+            let currentQuestionIndex = 0;
+            let score = 0;
+            let hasScore = false;
+
+            // Elemen DOM
+            const pages = document.querySelectorAll('.page');
+            const startBtn = document.getElementById('start-btn');
+            const eduMenuBtn = document.getElementById('edu-menu-btn');
+            const quizMenuBtn = document.getElementById('quiz-menu-btn');
+            const hplMenuBtn = document.getElementById('hpl-menu-btn');
+            const ageCalcBtn = document.getElementById('age-calc-btn');
+            const leaderboardMenuBtn = document.getElementById('leaderboard-menu-btn');
+            const dangerList = document.getElementById('danger-list');
+            const detailTitle = document.getElementById('detail-title');
+            const detailDescription = document.getElementById('detail-description');
+            const detailAction = document.getElementById('detail-action');
+            const videoContainer = document.getElementById('video-container');
+            const videoEmbed = document.getElementById('detail-video-embed');
+            const backToEduBtn = document.getElementById('back-to-edu');
+            const questionText = document.getElementById('question-text');
+            const optionsContainer = document.getElementById('options-container');
+            const progressBar = document.getElementById('progress-bar');
+            const feedbackContainer = document.getElementById('feedback-container');
+            const nextQuestionBtn = document.getElementById('next-question-btn');
+            const quizResultPage = document.getElementById('quiz-result-page');
+            const finalScoreSpan = document.getElementById('final-score');
+            const scoreCategoryP = document.getElementById('score-category');
+            const badgeContainer = document.getElementById('badge-container');
+            const retakeQuizBtn = document.getElementById('retake-quiz-btn');
+            const hphtDateInput = document.getElementById('hpht-date');
+            const calculateHplBtn = document.getElementById('calculate-hpl-btn');
+            const hplResultP = document.getElementById('hpl-result');
+            const hphtDateAgeInput = document.getElementById('hpht-date-age');
+            const calculateAgeBtn = document.getElementById('calculate-age-btn');
+            const gestationalAgeResultP = document.getElementById('gestational-age-result');
+            const darkModeToggleBtn = document.getElementById('dark-mode-toggle');
+            const leaderboardList = document.getElementById('leaderboard-list');
+            const leaderboardNameInput = document.getElementById('leaderboard-name');
+            const saveScoreBtn = document.getElementById('save-score-btn');
+            const messageBox = document.getElementById('message-box');
+            const messageBoxText = document.getElementById('message-box-text');
+            const messageBoxCloseBtn = document.getElementById('message-box-close');
+            
+            // Fungsi navigasi
+            function showPage(id) {
+                pages.forEach(page => page.classList.remove('active'));
+                document.getElementById(id).classList.add('active');
+            }
+            
+            // Fungsi untuk menampilkan pesan (pengganti alert)
+            function showMessage(message) {
+                messageBoxText.textContent = message;
+                messageBox.style.display = 'block';
+            }
+
+            messageBoxCloseBtn.addEventListener('click', () => {
+                messageBox.style.display = 'none';
+            });
+
+            // Event Listeners
+            startBtn.addEventListener('click', () => showPage('main-menu'));
+            eduMenuBtn.addEventListener('click', () => showPage('education-page'));
+            quizMenuBtn.addEventListener('click', () => startQuiz());
+            hplMenuBtn.addEventListener('click', () => showPage('hpl-page'));
+            ageCalcBtn.addEventListener('click', () => showPage('gestational-age-page'));
+            leaderboardMenuBtn.addEventListener('click', () => {
+                showPage('leaderboard-page');
+                loadLeaderboard();
+            });
+            document.querySelectorAll('[id^="back-to-menu-from"]').forEach(btn => {
+                btn.addEventListener('click', () => showPage('main-menu'));
+            });
+            backToEduBtn.addEventListener('click', () => {
+                showPage('education-page');
+            });
+            
+            // Fitur Edukasi
+            dangerList.addEventListener('click', (e) => {
+                const danger = e.target.dataset.danger;
+                if (danger) {
+                    const data = dangerSigns[danger];
+                    detailTitle.textContent = data.title;
+                    detailDescription.textContent = data.description;
+                    detailAction.textContent = data.action ? 'Saran Tindakan: ' + data.action : '';
+                    
+                    if (data.video) {
+                        videoEmbed.src = data.video;
+                        videoContainer.classList.add('active');
+                    } else {
+                        videoEmbed.src = '';
+                        videoContainer.classList.remove('active');
+                    }
+                    showPage('detail-page');
+                }
+            });
+
+            // Fitur Quiz
+            function startQuiz() {
+                currentQuestionIndex = 0;
+                score = 0;
+                hasScore = false;
+                showPage('quiz-page');
+                feedbackContainer.textContent = '';
+                nextQuestionBtn.style.display = 'none';
+                displayQuestion();
+            }
+
+            function displayQuestion() {
+                const q = quizQuestions[currentQuestionIndex];
+                questionText.textContent = `${currentQuestionIndex + 1}. ${q.question}`;
+                optionsContainer.innerHTML = '';
+                q.options.forEach(option => {
+                    const button = document.createElement('div');
+                    button.textContent = option;
+                    button.classList.add('option');
+                    button.addEventListener('click', () => checkAnswer(option, q.answer, q.explanation));
+                    optionsContainer.appendChild(button);
+                });
+                updateProgressBar();
+            }
+
+            function checkAnswer(selectedOption, correctAnswer, explanation) {
+                const options = optionsContainer.querySelectorAll('.option');
+                options.forEach(option => {
+                    option.style.pointerEvents = 'none'; // Nonaktifkan klik setelah memilih
+                    if (option.textContent === correctAnswer) {
+                        option.classList.add('correct');
+                    } else if (option.textContent === selectedOption) {
+                        option.classList.add('wrong');
+                    }
+                });
+                
+                if (selectedOption === correctAnswer) {
+                    score++;
+                    feedbackContainer.textContent = "Jawaban Anda Benar!";
+                } else {
+                    feedbackContainer.textContent = `Jawaban salah. Penjelasan: ${explanation}`;
+                }
+                nextQuestionBtn.style.display = 'inline-block';
+            }
+
+            nextQuestionBtn.addEventListener('click', () => {
+                currentQuestionIndex++;
+                feedbackContainer.textContent = '';
+                nextQuestionBtn.style.display = 'none';
+                if (currentQuestionIndex < quizQuestions.length) {
+                    displayQuestion();
+                } else {
+                    showResult();
+                }
+            });
+
+            function showResult() {
+                showPage('quiz-result-page');
+                finalScoreSpan.textContent = score;
+                let category = '';
+                if (score <= 4) {
+                    category = 'Rendah. Mohon pelajari kembali materi edukasi.';
+                } else if (score <= 7) {
+                    category = 'Sedang. Tingkatkan pemahaman Anda.';
+                } else {
+                    category = 'Tinggi. Pemahaman Anda sangat baik!';
+                    hasScore = true;
+                    badgeContainer.innerHTML = '🏆';
+                }
+                scoreCategoryP.textContent = `Kategori: ${category}`;
+                if (hasScore) {
+                    saveScoreBtn.style.display = 'inline-block';
+                }
+            }
+            
+            retakeQuizBtn.addEventListener('click', () => startQuiz());
+
+            function updateProgressBar() {
+                const progress = ((currentQuestionIndex) / quizQuestions.length) * 100;
+                progressBar.style.width = `${progress}%`;
+            }
+
+            // Fitur Leaderboard (menggunakan localStorage)
+            function loadLeaderboard() {
+                leaderboardList.innerHTML = '';
+                const scores = JSON.parse(localStorage.getItem('quizLeaderboard')) || [];
+                if (scores.length === 0) {
+                    leaderboardList.textContent = "Belum ada skor yang tersimpan.";
+                    return;
+                }
+                scores.sort((a, b) => b.score - a.score);
+                scores.forEach((entry, index) => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <span><strong>#${index + 1}</strong> - ${entry.name}</span>
+                        <span>${entry.score}/10</span>
+                    `;
+                    leaderboardList.appendChild(li);
+                });
+            }
+
+            saveScoreBtn.addEventListener('click', () => {
+                const name = leaderboardNameInput.value.trim();
+                if (name === '') {
+                    showMessage('Nama tidak boleh kosong!');
+                    return;
+                }
+                
+                let scores = JSON.parse(localStorage.getItem('quizLeaderboard')) || [];
+                scores.push({ name: name, score: score });
+                localStorage.setItem('quizLeaderboard', JSON.stringify(scores));
+                
+                showMessage(`Skor ${score} berhasil disimpan untuk ${name}!`);
+                leaderboardNameInput.value = '';
+                saveScoreBtn.style.display = 'none';
+                showPage('leaderboard-page');
+                loadLeaderboard();
+            });
+
+            // Fitur Kalkulator HPL
+            calculateHplBtn.addEventListener('click', () => {
+                const hphtDate = new Date(hphtDateInput.value);
+                if (isNaN(hphtDate.getTime())) {
+                    showMessage("Masukkan tanggal HPHT yang valid!");
+                    hplResultP.textContent = '';
+                    return;
+                }
+                
+                const hpl = new Date(hphtDate.getTime() + (280 * 24 * 60 * 60 * 1000));
+                const formatter = new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+                hplResultP.textContent = `Hari Perkiraan Lahir (HPL) Anda: ${formatter.format(hpl)}`;
+            });
+
+            // Fitur Kalkulator Usia Kehamilan
+            calculateAgeBtn.addEventListener('click', () => {
+                const hphtDateStr = hphtDateAgeInput.value;
+                if (!hphtDateStr) {
+                    showMessage("Mohon masukkan tanggal HPHT.");
+                    gestationalAgeResultP.textContent = "";
+                    return;
+                }
+                
+                const hphtDate = new Date(hphtDateStr);
+                const today = new Date();
+                
+                const diffTime = Math.abs(today - hphtDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                
+                const weeks = Math.floor(diffDays / 7);
+                const days = diffDays % 7;
+                
+                gestationalAgeResultP.textContent = `Usia kehamilan Anda sekitar ${weeks} minggu dan ${days} hari.`;
+            });
+
+
+            // Fitur Dark Mode
+            darkModeToggleBtn.addEventListener('click', () => {
+                document.body.classList.toggle('dark-mode');
+                const isDarkMode = document.body.classList.contains('dark-mode');
+                darkModeToggleBtn.textContent = isDarkMode ? 'Mode Terang' : 'Mode Gelap';
+                localStorage.setItem('darkMode', isDarkMode);
+            });
+            
+            // Cek status dark mode saat memuat halaman
+            if (localStorage.getItem('darkMode') === 'true') {
+                document.body.classList.add('dark-mode');
+                darkModeToggleBtn.textContent = 'Mode Terang';
+            }
+        });
+    </script>
+</body>
+</html>
