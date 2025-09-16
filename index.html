@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tanda Bahaya Kehamilan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Palet Warna dan CSS Umum yang Lebih Hidup */
+        /* Font dan Palet Warna */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+        
         :root {
             --primary-color: #6a1b9a; /* Ungu Cerah */
             --secondary-color: #43a047; /* Hijau Segar */
@@ -651,55 +654,71 @@
                 const apiKey = "";
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
 
-                try {
-                    const payload = {
-                        contents: [{
-                            parts: [{ text: text }]
-                        }],
-                        generationConfig: {
-                            responseModalities: ["AUDIO"],
-                            speechConfig: {
-                                voiceConfig: {
-                                    prebuiltVoiceConfig: { voiceName: "Kore" }
+                let retries = 0;
+                const maxRetries = 3;
+                const initialDelay = 1000;
+
+                while (retries < maxRetries) {
+                    try {
+                        const payload = {
+                            contents: [{
+                                parts: [{ text: text }]
+                            }],
+                            generationConfig: {
+                                responseModalities: ["AUDIO"],
+                                speechConfig: {
+                                    voiceConfig: {
+                                        prebuiltVoiceConfig: { voiceName: "Kore" }
+                                    }
                                 }
-                            }
-                        },
-                        model: "gemini-2.5-flash-preview-tts"
-                    };
+                            },
+                            model: "gemini-2.5-flash-preview-tts"
+                        };
 
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
+                        const response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
 
-                    if (!response.ok) {
-                        throw new Error(`Error API: ${response.statusText}`);
+                        if (!response.ok) {
+                            console.error('API call failed. Response status:', response.status);
+                            throw new Error(`API error: ${response.statusText}`);
+                        }
+
+                        const result = await response.json();
+                        const part = result?.candidates?.[0]?.content?.parts?.[0];
+                        const audioData = part?.inlineData?.data;
+                        const mimeType = part?.inlineData?.mimeType;
+
+                        if (audioData && mimeType && mimeType.startsWith("audio/")) {
+                            const sampleRateMatch = mimeType.match(/rate=(\d+)/);
+                            const sampleRate = sampleRateMatch ? parseInt(sampleRateMatch[1], 10) : 16000;
+                            const pcmData = base64ToArrayBuffer(audioData);
+                            const wavBlob = pcmToWav(pcmData, sampleRate);
+                            const audioUrl = URL.createObjectURL(wavBlob);
+                            
+                            audioPlayer.src = audioUrl;
+                            audioPlayer.play().catch(e => {
+                                console.error("Gagal memutar audio:", e);
+                                showMessage("Gagal memutar audio. Silakan coba lagi.");
+                            });
+                            return; // Keluar dari loop jika berhasil
+                        } else {
+                            throw new Error("Data audio tidak ditemukan atau format tidak didukung.");
+                        }
+                    } catch (error) {
+                        retries++;
+                        console.error(`Gagal memuat audio (Percobaan ke-${retries}):`, error);
+                        if (retries < maxRetries) {
+                            await new Promise(res => setTimeout(res, initialDelay * Math.pow(2, retries - 1)));
+                        } else {
+                            showMessage("Maaf, narasi tidak bisa dimuat. Mohon pastikan file diunggah ke server web.");
+                        }
+                    } finally {
+                        playAudioBtn.textContent = '▶️ Dengarkan Narasi';
+                        playAudioBtn.disabled = false;
                     }
-
-                    const result = await response.json();
-                    const part = result?.candidates?.[0]?.content?.parts?.[0];
-                    const audioData = part?.inlineData?.data;
-                    const mimeType = part?.inlineData?.mimeType;
-
-                    if (audioData && mimeType && mimeType.startsWith("audio/")) {
-                        const sampleRate = parseInt(mimeType.match(/rate=(\d+)/)[1], 10);
-                        const pcmData = base64ToArrayBuffer(audioData);
-                        const wavBlob = pcmToWav(pcmData, sampleRate);
-                        const audioUrl = URL.createObjectURL(wavBlob);
-                        
-                        audioPlayer.src = audioUrl;
-                        audioPlayer.play().catch(e => console.error("Gagal memutar audio:", e));
-                    } else {
-                        console.error("Data audio tidak ditemukan atau format tidak didukung.");
-                        showMessage("Gagal memutar audio. Coba lagi nanti.");
-                    }
-                } catch (error) {
-                    console.error('Terjadi kesalahan saat memanggil API:', error);
-                    showMessage("Maaf, terjadi kesalahan saat memuat narasi.");
-                } finally {
-                    playAudioBtn.textContent = '▶️ Dengarkan Narasi';
-                    playAudioBtn.disabled = false;
                 }
             }
 
